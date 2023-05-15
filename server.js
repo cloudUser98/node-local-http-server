@@ -2,9 +2,13 @@ const http = require("http");
 //const fs = require("fs").promises;
 const fs = require("fs");
 const path = require('path');
+const query_string = require("querystring");
+const url_module = require("url");
 
 const host = 'localhost';
-const port = 8000;
+const port = 8001;
+
+console.log(__dirname);
 
 const types = {
   html: 'text/html',
@@ -19,10 +23,11 @@ const types = {
   ico: 'image/x-icon',
 };
 
-
 const requestListener = function (req, res) {
 
-    const url = req.url === "/" ? "/index.html" : req.url
+    console.log("Parsed request: ", url_module.parse(req.url));
+    const { pathname, query } = url_module.parse(req.url);
+    const url = pathname === "/luis-escobedo/" ? "/luis-escobedo/index.html" : pathname;
     const extension = path.extname(url).slice(1);
     const type = extension ? types[extension] : types.html;
 
@@ -33,6 +38,11 @@ const requestListener = function (req, res) {
             //res.setHeader("Contetn-Type", type);
             res.writeHead(200, {"Content-Type": type});
             res.end(contents);
+        })
+        .catch(err => {
+            console.log("FILE NOT FOUND");
+            fs.promises.readFile("404.html", "utf8")
+                .then(contents => res.end(contents))
         })
 };
 
